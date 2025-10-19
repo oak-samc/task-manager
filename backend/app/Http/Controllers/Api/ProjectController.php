@@ -32,4 +32,10 @@ class ProjectController extends Controller
         $tasks = $project->tasks()->get();
         return response()->json($tasks);
     }
+
+    public function destroy(Project $project): JsonResponse
+    {
+        $project->delete();
+        return response()->json(['message' => 'Project deleted successfully'], 200);
+    }
 }
