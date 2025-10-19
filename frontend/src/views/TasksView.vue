@@ -155,6 +155,18 @@
     <div v-if="error" class="error">
       {{ error }}
     </div>
+
+    <!-- Delete Task Confirmation Modal -->
+    <div v-if="showDeleteConfirm" class="modal-overlay" @click="cancelDeleteTask">
+      <div class="modal-content" @click.stop>
+        <h3>Confirmar Exclusão</h3>
+        <p>Tem certeza que deseja excluir esta tarefa?</p>
+        <div class="modal-actions">
+          <button @click="cancelDeleteTask" class="btn btn-secondary">Cancelar</button>
+          <button @click="confirmDeleteTask" class="btn btn-danger">Excluir</button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -171,6 +183,8 @@ const projects = ref([])
 const loading = ref(false)
 const error = ref('')
 const showCreateForm = ref(false)
+const showDeleteConfirm = ref(false)
+const taskToDelete = ref(null)
 const editingTask = ref(null)
 
 const newTask = ref({
@@ -273,16 +287,28 @@ const updateTask = async () => {
   }
 }
 
-const deleteTask = async (taskId) => {
-  if (!confirm('Are you sure you want to delete this task?')) return
+const deleteTask = (taskId) => {
+  taskToDelete.value = taskId
+  showDeleteConfirm.value = true
+}
+
+const confirmDeleteTask = async () => {
+  if (!taskToDelete.value) return
   
   try {
-    await tasksApi.delete(taskId)
-    tasks.value = tasks.value.filter(t => t.id !== taskId)
+    await tasksApi.delete(taskToDelete.value)
+    tasks.value = tasks.value.filter(t => t.id !== taskToDelete.value)
+    showDeleteConfirm.value = false
+    taskToDelete.value = null
   } catch (err) {
-    error.value = 'Failed to delete task. Please try again.'
+    error.value = 'Falha ao excluir tarefa. Tente novamente.'
     console.error('Error deleting task:', err)
   }
+}
+
+const cancelDeleteTask = () => {
+  showDeleteConfirm.value = false
+  taskToDelete.value = null
 }
 
 const onDragStart = (event, task) => {
@@ -540,6 +566,84 @@ onMounted(async () => {
   .kanban-board {
     grid-template-columns: repeat(2, 1fr);
   }
+}
+
+/* Modal Styles */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background: white;
+  padding: 2rem;
+  border-radius: 0.5rem;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+  max-width: 400px;
+  width: 90%;
+}
+
+.modal-content h3 {
+  margin: 0 0 1rem 0;
+  color: #374151;
+  font-size: 1.25rem;
+}
+
+.modal-content p {
+  margin: 0 0 1.5rem 0;
+  color: #6b7280;
+  line-height: 1.5;
+}
+
+.modal-actions {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: flex-end;
+}
+
+.btn-secondary {
+  background-color: #f3f4f6;
+  color: #374151;
+  border: 1px solid #d1d5db;
+  padding: 0.5rem 1rem;
+  border-radius: 0.375rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-secondary:hover {
+  background-color: #e5e7eb;
+}
+
+.btn-danger {
+  background-color: #dc2626;
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 0.375rem;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.btn-danger:hover {
+  background-color: #b91c1c;
+}
+
+/* Textarea Styles */
+.form-textarea {
+  resize: vertical;
+  min-height: 80px;
+  max-height: 200px;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 @media (max-width: 768px) {
