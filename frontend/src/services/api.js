@@ -15,6 +15,7 @@ export const projectsApi = {
   getAll: () => api.get('/projects'),
   create: (data) => api.post('/projects', data),
   getById: (id) => api.get(`/projects/${id}`),
+  delete: (id) => api.delete(`/projects/${id}`),
   getTasks: (id) => api.get(`/projects/${id}/tasks`),
 }
 
