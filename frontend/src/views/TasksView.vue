@@ -75,8 +75,12 @@
             v-for="task in getTasksByStatus(status.value)"
             :key="task.id"
             class="task-card"
+            :class="{ 'drag-over': dragOverTask === task.id }"
             draggable="true"
             @dragstart="onDragStart($event, task)"
+            @dragover="onDragOverTask($event, task)"
+            @dragleave="onDragLeaveTask($event, task)"
+            @drop="onDropOnTask($event, task)"
           >
             <div class="task-header">
               <h4>{{ task.title }}</h4>
@@ -186,6 +190,8 @@ const showCreateForm = ref(false)
 const showDeleteConfirm = ref(false)
 const taskToDelete = ref(null)
 const editingTask = ref(null)
+const dragOverTask = ref(null)
+const draggedTask = ref(null)
 
 const newTask = ref({
   title: '',
@@ -313,13 +319,83 @@ const cancelDeleteTask = () => {
 
 const onDragStart = (event, task) => {
   event.dataTransfer.setData('text/plain', JSON.stringify(task))
+  draggedTask.value = task
+}
+
+const onDragOverTask = (event, task) => {
+  event.preventDefault()
+  event.stopPropagation()
+  
+  if (draggedTask.value && draggedTask.value.id !== task.id) {
+    dragOverTask.value = task.id
+  }
+}
+
+const onDragLeaveTask = (event, task) => {
+  event.preventDefault()
+  event.stopPropagation()
+  
+  if (dragOverTask.value === task.id) {
+    dragOverTask.value = null
+  }
+}
+
+const onDropOnTask = async (event, targetTask) => {
+  event.preventDefault()
+  event.stopPropagation()
+  
+  if (!draggedTask.value || draggedTask.value.id === targetTask.id) {
+    dragOverTask.value = null
+    return
+  }
+  
+  const sourceTask = draggedTask.value
+  
+  // Se as tarefas estão na mesma coluna, trocar posições
+  if (sourceTask.status === targetTask.status) {
+    const tasksInColumn = getTasksByStatus(sourceTask.status)
+    const sourceIndex = tasksInColumn.findIndex(t => t.id === sourceTask.id)
+    const targetIndex = tasksInColumn.findIndex(t => t.id === targetTask.id)
+    
+    if (sourceIndex !== -1 && targetIndex !== -1) {
+      // Trocar posições no array local
+      const allTasksIndex1 = tasks.value.findIndex(t => t.id === sourceTask.id)
+      const allTasksIndex2 = tasks.value.findIndex(t => t.id === targetTask.id)
+      
+      if (allTasksIndex1 !== -1 && allTasksIndex2 !== -1) {
+        // Trocar as tarefas no array
+        const temp = tasks.value[allTasksIndex1]
+        tasks.value[allTasksIndex1] = tasks.value[allTasksIndex2]
+        tasks.value[allTasksIndex2] = temp
+      }
+    }
+  } else {
+    // Se estão em colunas diferentes, mover para a nova coluna
+    try {
+      const updatedTask = { ...sourceTask, status: targetTask.status }
+      const response = await tasksApi.update(sourceTask.id, updatedTask)
+      const index = tasks.value.findIndex(t => t.id === sourceTask.id)
+      if (index !== -1) {
+        tasks.value[index] = response.data
+      }
+    } catch (err) {
+      error.value = 'Failed to update task status. Please try again.'
+      console.error('Error updating task status:', err)
+    }
+  }
+  
+  dragOverTask.value = null
+  draggedTask.value = null
 }
 
 const onDrop = async (event, newStatus) => {
   event.preventDefault()
   const taskData = JSON.parse(event.dataTransfer.getData('text/plain'))
   
-  if (taskData.status === newStatus) return
+  if (taskData.status === newStatus) {
+    draggedTask.value = null
+    return
+  }
   
   try {
     const updatedTask = { ...taskData, status: newStatus }
@@ -332,6 +408,8 @@ const onDrop = async (event, newStatus) => {
     error.value = 'Failed to update task status. Please try again.'
     console.error('Error updating task status:', err)
   }
+  
+  draggedTask.value = null
 }
 
 const cancelCreate = () => {
@@ -455,6 +533,12 @@ onMounted(async () => {
 
 .task-card:active {
   cursor: grabbing;
+}
+
+.task-card.drag-over {
+  border: 2px dashed #2563eb;
+  background-color: #eff6ff;
+  transform: translateY(-2px);
 }
 
 .task-header {
