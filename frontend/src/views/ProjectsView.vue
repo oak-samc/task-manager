@@ -237,7 +237,7 @@ const loadProjects = async () => {
     filterProjects()
   } catch (err) {
     error.value = 'Failed to load projects. Please try again.'
-    console.error('Error loading projects:', err)
+    // Silenciar logs no console; manter feedback de erro via UI
   } finally {
     loading.value = false
   }
@@ -295,7 +295,7 @@ const createProject = async () => {
     filterProjects() // Atualizar filtros
   } catch (err) {
     error.value = 'Failed to create project. Please try again.'
-    console.error('Error creating project:', err)
+    // Silenciar logs no console; manter feedback de erro via UI
   } finally {
     loading.value = false
   }
@@ -336,7 +336,7 @@ const updateProject = async () => {
     filterProjects() // Atualizar filtros
   } catch (err) {
     error.value = 'Falha ao atualizar projeto. Tente novamente.'
-    console.error('Error updating project:', err)
+    // Silenciar logs no console; manter feedback de erro via UI
   } finally {
     loading.value = false
   }
@@ -362,7 +362,7 @@ const confirmDelete = async () => {
     allProjects.value = allProjects.value.filter(project => project.id !== projectToDelete.value)
     
     if (response.data?.deleted_tasks || response.data?.deleted_task_lists) {
-      console.log(`Projeto deletado junto com ${response.data.deleted_tasks} tarefas e ${response.data.deleted_task_lists} listas`)
+      // informação disponível na resposta; sem logs no console
     }
     
     showDeleteConfirm.value = false
@@ -370,7 +370,7 @@ const confirmDelete = async () => {
     filterProjects() // Atualizar filtros
   } catch (err) {
     error.value = 'Falha ao excluir projeto. Tente novamente.'
-    console.error('Error deleting project:', err)
+    // Silenciar logs no console; manter feedback de erro via UI
     
     showDeleteConfirm.value = false
     projectToDelete.value = null
