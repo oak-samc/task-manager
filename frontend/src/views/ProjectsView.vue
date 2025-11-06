@@ -541,17 +541,11 @@ onMounted(() => {
 
 /* Estilizar campo de descrição */
 .form-card textarea.form-input {
-  /* Tamanho fixo proporcional ao layout e responsivo */
   height: clamp(120px, 16vh, 160px);
   min-height: 120px;
   max-height: 160px;
-
-  /* Permite apenas redimensionamento horizontal dentro do container */
-  resize: horizontal;
-  min-width: 280px;
-  max-width: 100%;
-
-  /* Respeita paddings ao expandir horizontalmente */
+  resize: vertical;
+  width: 100%;
   padding: 0.75rem;
   box-sizing: border-box;
   overflow-y: auto;
@@ -792,13 +786,11 @@ onMounted(() => {
 }
 
 .modal-content textarea.form-input {
-  /* Mesma regra do formulário principal para manter consistência */
   height: clamp(120px, 16vh, 160px);
   min-height: 120px;
   max-height: 160px;
-  resize: horizontal;
-  min-width: 280px;
-  max-width: 100%;
+  resize: vertical;
+  width: 100%;
   padding: 0.75rem;
   box-sizing: border-box;
   overflow-y: auto;
