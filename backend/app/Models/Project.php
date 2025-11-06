@@ -8,11 +8,17 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class Project extends Model
 {
     protected $fillable = [
-        'name'
+        'name',
+        'description'
     ];
 
     public function tasks(): HasMany
     {
-        return $this->hasMany(Task::class);
+        return $this->hasMany(Task::class)->orderBy('status')->orderBy('position');
+    }
+
+    public function taskLists(): HasMany
+    {
+        return $this->hasMany(TaskList::class)->orderBy('position');
     }
 }
