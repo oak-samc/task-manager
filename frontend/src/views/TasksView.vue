@@ -860,7 +860,7 @@ const onDragStart = (event, task) => {
 
 }
 
-// 🔧 NOVA FUNÇÃO: Finalizar drag de task
+// Finalizar drag de task
 const onTaskDragEnd = (event) => {
 
   // Limpar estados de drag
@@ -944,7 +944,7 @@ const onDropOnTask = async (event, targetTask) => {
     return
   }
 
-  // 🔧 CORREÇÃO: Pegar a task atualizada do estado local, não do draggedTask
+  // Pegar a task atualizada do estado local
   const sourceTask = tasks.value.find(t => t.id === draggedTask.value.id) || draggedTask.value
 
   // Determinar posição de inserção baseada no dragOverTask
@@ -970,10 +970,10 @@ const onDropOnTask = async (event, targetTask) => {
   stopAutoScroll()
 }
 
-// Nova função: Reordenar dentro da mesma coluna
+// Reordenar dentro da mesma coluna
 const handleSameColumnReorder = async (sourceTask, targetTask, insertPosition = 'before') => {
 
-  // 🔧 CORREÇÃO: Usar task_list_id em vez de status
+  // Usar task_list_id em vez de status
   const tasksInColumn = getTasksByColumn(sourceTask.task_list_id)
   const sourceIndex = tasksInColumn.findIndex(t => t.id === sourceTask.id)
   const targetIndex = tasksInColumn.findIndex(t => t.id === targetTask.id)
@@ -1050,7 +1050,7 @@ const handleSameColumnReorder = async (sourceTask, targetTask, insertPosition = 
     tasks.value[allTasksIndex].position = newPosition
   }
 
-  // 🔧 CORREÇÃO: Reordenar array local para refletir mudança (por task_list_id e position)
+  // Reordenar array local para refletir mudança (por task_list_id e position)
   tasks.value.sort((a, b) => {
     if (a.task_list_id !== b.task_list_id) {
       return (a.task_list_id || 0) - (b.task_list_id || 0)
@@ -1059,10 +1059,10 @@ const handleSameColumnReorder = async (sourceTask, targetTask, insertPosition = 
   })
 }
 
-// Nova função: Mover entre colunas
+// Mover entre colunas
 const handleCrossColumnMove = async (sourceTask, targetTask, insertPosition = 'before') => {
 
-  // 🔧 CORREÇÃO: Usar task_list_id em vez de status
+  // Usar task_list_id em vez de status
   const tasksInTargetColumn = getTasksByColumn(targetTask.task_list_id)
   const targetIndex = tasksInTargetColumn.findIndex(t => t.id === targetTask.id)
 
@@ -1109,14 +1109,14 @@ const handleCrossColumnMove = async (sourceTask, targetTask, insertPosition = 'b
     }
   }
 
-  // 🔧 CORREÇÃO: Atualizar task_list_id e posição via API
+  // Atualizar task_list_id e posição via API
   await tasksApi.reorder([{
     id: sourceTask.id,
     position: newPosition,
     task_list_id: targetTask.task_list_id  // Nova lista!
   }])
 
-  // 🔧 CORREÇÃO: Atualizar task_list_id via update (para manter compatibilidade)
+  // Atualizar task_list_id via update (para manter compatibilidade)
   const updatedTask = { ...sourceTask, task_list_id: targetTask.task_list_id, position: newPosition }
   const response = await tasksApi.update(sourceTask.id, updatedTask)
 
@@ -1498,7 +1498,7 @@ const stopAutoScroll = () => {
 
 // Capturar posição do mouse globalmente durante drag
 const trackMouseDuringDrag = (event) => {
-  // 🔧 MELHORADO: Funciona tanto para colunas quanto para tasks
+  // Funciona tanto para colunas quanto para tasks
   if (draggedColumn.value || draggedTask.value) {
     window.lastMouseEvent = event
 
