@@ -11,7 +11,9 @@ class Task extends Model
         'title',
         'description',
         'status',
-        'project_id'
+        'project_id',
+        'task_list_id',
+        'position'
     ];
 
     protected $casts = [
@@ -21,5 +23,10 @@ class Task extends Model
     public function project(): BelongsTo
     {
         return $this->belongsTo(Project::class);
+    }
+
+    public function taskList(): BelongsTo
+    {
+        return $this->belongsTo(TaskList::class);
     }
 }
