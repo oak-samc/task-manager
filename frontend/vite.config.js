@@ -11,6 +11,11 @@ export default defineConfig({
     // Desativar DevTools durante testes para evitar conflitos com Vitest
     ...(process.env.VITEST ? [] : [vueDevTools()]),
   ],
+  server: {
+    port: 5173,
+    strictPort: true,
+    host: 'localhost',
+  },
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url))
