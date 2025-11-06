@@ -36,7 +36,7 @@
           + Nova lista
         </button>
 
-        <button @click="showCreateForm = true" class="btn btn-primary btn-new-task">
+        <button @click="showCreateForm = true" class="btn btn-primary btn-new-task" :disabled="taskLists.length === 0">
           + Nova tarefa
         </button>
       </div>
@@ -110,15 +110,15 @@
         </div>
         <div class="form-group">
           <label class="form-label">Lista</label>
-          <select v-model="newTask.task_list_id" class="form-select" required>
-            <option value="">Selecione uma lista</option>
+          <select v-model="newTask.task_list_id" class="form-select" :disabled="taskLists.length === 0" required>
+            <option value="" disabled hidden>Selecione uma lista</option>
             <option v-for="list in taskLists" :key="list.id" :value="list.id">
               {{ list.name }}
             </option>
           </select>
         </div>
         <div class="form-actions">
-          <button type="submit" class="btn btn-primary" :disabled="loading">
+          <button type="submit" class="btn btn-primary" :disabled="loading || taskLists.length === 0">
             {{ loading ? 'Criando...' : 'Criar tarefa' }}
           </button>
           <button type="button" @click="cancelCreate" class="btn btn-secondary">
@@ -491,7 +491,7 @@ const loadTasks = async () => {
     tasks.value = response.data
   } catch (err) {
     error.value = 'Failed to load tasks. Please try again.'
-    console.error('Error loading tasks:', err)
+  // Silenciar logs no console; manter feedback de erro via UI
   } finally {
     loading.value = false
   }
@@ -506,7 +506,6 @@ const loadTaskLists = async () => {
       response = await taskListsApi.getAll()
     }
     taskLists.value = response.data
-    console.log('Task lists loaded:', taskLists.value.map(l => ({ id: l.id, name: l.name, position: l.position })))
 
     // Se posições são inválidas, normalizar
     const hasValidPositions = taskLists.value.every(tl =>
@@ -514,12 +513,11 @@ const loadTaskLists = async () => {
     )
 
     if (!hasValidPositions) {
-      console.log('⚠️ Posições inválidas detectadas, normalizando...')
       await normalizeTaskListPositions()
     }
 
   } catch (err) {
-    console.error('Error loading task lists:', err)
+  // Silenciar logs no console; manter feedback de erro via UI
   }
 }
 
@@ -532,7 +530,6 @@ const normalizeTaskListPositions = async () => {
       position: index + 1
     }))
 
-    console.log('Normalizando posições:', updateData)
 
     // Atualizar no backend
     await taskListsApi.reorder(updateData)
@@ -542,14 +539,9 @@ const normalizeTaskListPositions = async () => {
       list.position = index + 1
     })
 
-    console.log('✅ Posições normalizadas:', taskLists.value.map(tl => ({
-      id: tl.id,
-      name: tl.name,
-      position: tl.position
-    })))
 
   } catch (error) {
-    console.error('Erro ao normalizar posições:', error)
+  // Silenciar logs no console; manter feedback de erro via UI
   }
 }
 
@@ -606,7 +598,7 @@ const createTaskList = async () => {
     } else {
       error.value = 'Falha ao criar lista. Tente novamente.'
     }
-    console.error('Error creating task list:', err)
+  // Silenciar logs no console; manter feedback de erro via UI
   } finally {
     loading.value = false
   }
@@ -617,7 +609,7 @@ const loadProjects = async () => {
     const response = await projectsApi.getAll()
     projects.value = response.data
   } catch (err) {
-    console.error('Error loading projects:', err)
+  // Silenciar logs no console; manter feedback de erro via UI
   }
 }
 
@@ -645,7 +637,7 @@ const updateTaskList = async () => {
     await loadTaskLists()
   } catch (err) {
     error.value = 'Failed to update task list. Please try again.'
-    console.error('Error updating task list:', err)
+  // Silenciar logs no console; manter feedback de erro via UI
   } finally {
     loading.value = false
   }
@@ -668,7 +660,7 @@ const confirmDeleteTaskList = async () => {
     await loadTasks()
   } catch (err) {
     error.value = 'Erro ao deletar lista. Tente novamente.'
-    console.error('Error deleting task list:', err)
+  // Silenciar logs no console; manter feedback de erro via UI
   } finally {
     taskListToDelete.value = null
     showDeleteTaskListConfirm.value = false
@@ -708,10 +700,9 @@ const updateProject = async () => {
     }
 
     editingProject.value = null
-    console.log('✅ Projeto atualizado com sucesso!')
   } catch (err) {
     error.value = 'Erro ao atualizar projeto. Tente novamente.'
-    console.error('Erro ao atualizar projeto:', err)
+  // Silenciar logs no console; manter feedback de erro via UI
   } finally {
     loading.value = false
   }
@@ -742,7 +733,6 @@ const confirmDeleteProject = async () => {
       projects.value.splice(index, 1)
     }
 
-    console.log('✅ Projeto deletado com sucesso!')
 
     // Redirecionar para lista de projetos ao deletar
     if (projectId.value && projectId.value == projectToDelete.value.id) {
@@ -754,7 +744,7 @@ const confirmDeleteProject = async () => {
 
   } catch (err) {
     error.value = 'Erro ao deletar projeto. Verifique se não há dependências.'
-    console.error('Erro ao deletar projeto:', err)
+  // Silenciar logs no console; manter feedback de erro via UI
   } finally {
     loading.value = false
   }
@@ -789,7 +779,7 @@ const createTask = async () => {
     showCreateForm.value = false
   } catch (err) {
     error.value = 'Failed to create task. Please try again.'
-    console.error('Error creating task:', err)
+  // Silenciar logs no console; manter feedback de erro via UI
   } finally {
     loading.value = false
   }
@@ -813,7 +803,7 @@ const updateTask = async () => {
     editingTask.value = null
   } catch (err) {
     error.value = 'Failed to update task. Please try again.'
-    console.error('Error updating task:', err)
+  // Silenciar logs no console; manter feedback de erro via UI
   } finally {
     loading.value = false
   }
@@ -834,7 +824,7 @@ const confirmDeleteTask = async () => {
     taskToDelete.value = null
   } catch (err) {
     error.value = 'Falha ao excluir tarefa. Tente novamente.'
-    console.error('Error deleting task:', err)
+  // Silenciar logs no console; manter feedback de erro via UI
   }
 }
 
@@ -870,17 +860,14 @@ const onDragStart = (event, task) => {
   draggedTask.value = task
 
   // Ativar auto-scroll para tasks
-  console.log('🎯 Task drag started:', taskDataWithDebug.title)
 
   // Iniciar scroll automático se necessário
   startAutoScroll()
 
-  console.log('Drag started:', taskDataWithDebug)
 }
 
 // 🔧 NOVA FUNÇÃO: Finalizar drag de task
 const onTaskDragEnd = (event) => {
-  console.log('🏁 Task drag ended')
 
   // Limpar estados de drag
   draggedTask.value = null
@@ -931,7 +918,6 @@ const onDropOnTask = async (event, targetTask) => {
     const rawData = event.dataTransfer.getData('text/plain')
     const dragData = JSON.parse(rawData)
     if (dragData.type === 'column') {
-      console.log('Column drag detected, ignoring in task-on-task drop handler')
       return
     }
   } catch (err) {
@@ -951,32 +937,15 @@ const onDropOnTask = async (event, targetTask) => {
     dragOverTask.value.split('-')[1] : 'before'
 
   try {
-    // 🔧 DEBUG: Logs detalhados
-    console.log('🔍 Source Task:', {
-      id: sourceTask.id,
-      title: sourceTask.title,
-      task_list_id: sourceTask.task_list_id,
-      position: sourceTask.position
-    })
-    console.log('🎯 Target Task:', {
-      id: targetTask.id,
-      title: targetTask.title,
-      task_list_id: targetTask.task_list_id,
-      position: targetTask.position
-    })
-    console.log('📍 Insert Position:', insertPosition)
-
     // Verificar task_list_id em vez de status
     if (sourceTask.task_list_id === targetTask.task_list_id) {
-      console.log('🔄 Reordenação dentro da mesma lista:', sourceTask.task_list_id)
       await handleSameColumnReorder(sourceTask, targetTask, insertPosition)
     } else {
-      console.log('📋 Movimentação entre listas diferentes:', sourceTask.task_list_id, '->', targetTask.task_list_id)
       await handleCrossColumnMove(sourceTask, targetTask, insertPosition)
     }
   } catch (err) {
     error.value = 'Failed to reorder tasks. Please try again.'
-    console.error('Error reordering tasks:', err)
+    // Silenciar logs no console; manter feedback de erro via UI
     // Recarregar para reverter mudanças visuais em caso de erro
     await loadTasks()
   }
@@ -989,7 +958,6 @@ const onDropOnTask = async (event, targetTask) => {
 
 // Nova função: Reordenar dentro da mesma coluna
 const handleSameColumnReorder = async (sourceTask, targetTask, insertPosition = 'before') => {
-  console.log('🔄 Reordenando dentro da mesma lista:', sourceTask.task_list_id)
 
   // 🔧 CORREÇÃO: Usar task_list_id em vez de status
   const tasksInColumn = getTasksByColumn(sourceTask.task_list_id)
@@ -1053,7 +1021,6 @@ const handleSameColumnReorder = async (sourceTask, targetTask, insertPosition = 
 
 // Nova função: Mover entre colunas
 const handleCrossColumnMove = async (sourceTask, targetTask, insertPosition = 'before') => {
-  console.log('📋 Movendo entre listas:', sourceTask.task_list_id, '->', targetTask.task_list_id)
 
   // 🔧 CORREÇÃO: Usar task_list_id em vez de status
   const tasksInTargetColumn = getTasksByColumn(targetTask.task_list_id)
@@ -1104,16 +1071,14 @@ const onDrop = async (event, columnId, columnType) => {
   try {
     const rawData = event.dataTransfer.getData('text/plain')
     taskData = JSON.parse(rawData)
-    console.log('Drop received:', { taskData, columnId, columnType })
 
     // Verificar se é drag de coluna - ignorar
     if (taskData.type === 'column') {
-      console.log('Column drag detected, ignoring in task drop handler')
       return
     }
 
   } catch (err) {
-    console.error('Invalid JSON in drag data:', err)
+    // Silenciar logs no console; manter feedback de erro via UI
     draggedTask.value = null
     // Parar auto-scroll ao finalizar drag de task
     stopAutoScroll()
@@ -1123,7 +1088,6 @@ const onDrop = async (event, columnId, columnType) => {
   // Verificar se é a mesma coluna - corrigir lógica
   const currentColumn = taskData.task_list_id
   if (columnType === 'task_list' && currentColumn === columnId) {
-    console.log('Same column, ignoring drop')
     draggedTask.value = null
     // Parar auto-scroll ao finalizar drag de task
     stopAutoScroll()
@@ -1138,12 +1102,6 @@ const onDrop = async (event, columnId, columnType) => {
       : 0
     const newPosition = maxPosition + 1
 
-    console.log('Moving task to new position:', {
-      taskId: taskData.id,
-      fromColumn: currentColumn,
-      toColumn: columnId,
-      newPosition
-    })
 
     // Preparar dados de atualização
     const updatedTask = {
@@ -1174,8 +1132,6 @@ const onDrop = async (event, columnId, columnType) => {
 
     await tasksApi.reorder([reorderData])
 
-    console.log('Task moved successfully via API')
-
     // Atualizar na lista local - garantir que todos os campos sejam atualizados
     const index = tasks.value.findIndex(t => t.id === taskData.id)
     if (index !== -1) {
@@ -1185,11 +1141,11 @@ const onDrop = async (event, columnId, columnType) => {
         task_list_id: reorderData.task_list_id || tasks.value[index].task_list_id,
         status: reorderData.status || tasks.value[index].status
       }
-      console.log('Local UI updated for task:', tasks.value[index])
+      // UI local atualizada
     }
   } catch (err) {
     error.value = 'Failed to update task. Please try again.'
-    console.error('Error updating task:', err)
+  // Silenciar logs no console; manter feedback de erro via UI
   }
 
   draggedTask.value = null
@@ -1211,7 +1167,8 @@ const resetNewTask = () => {
     title: '',
     description: '',
     status: 'pending',
-    task_list_id: null,
+    // Usar string vazia para ativar o placeholder do <select>
+    task_list_id: '',
     project_id: projectId.value || ''
   }
 }
@@ -1271,7 +1228,6 @@ const onColumnDragStart = (event, column) => {
 
   // Verificar se há task sendo arrastada
   if (draggedTask.value) {
-    console.log('Task drag in progress, ignoring column drag')
     event.preventDefault()
     return false
   }
@@ -1286,7 +1242,7 @@ const onColumnDragStart = (event, column) => {
   // Iniciar auto-scroll
   startAutoScroll()
 
-  console.log('Column drag started:', column.label)
+  // Log removido para evitar ruído no console
 }
 
 const onColumnDragEnd = (event) => {
@@ -1355,7 +1311,6 @@ const onColumnDrop = async (event, targetColumn) => {
     const rawData = event.dataTransfer.getData('text/plain')
     const dragData = JSON.parse(rawData)
     if (dragData.type !== 'column') {
-      console.log('Task drag detected, ignoring in column drop handler')
       return
     }
   } catch (err) {
@@ -1363,7 +1318,6 @@ const onColumnDrop = async (event, targetColumn) => {
   }
 
   if (!draggedColumn.value || draggedColumn.value.id === targetColumn.id) {
-    console.log('Drop cancelled: same column or no dragged column')
     return
   }
 
@@ -1386,25 +1340,12 @@ const onColumnDrop = async (event, targetColumn) => {
     dropSide = 'swap'
   }
 
-  console.log('Column drop:', {
-    draggedColumn: draggedColumn.value?.name,
-    mouseX,
-    columnLeft,
-    columnWidth,
-    leftZone,
-    rightZone,
-    dropSide,
-    sourceId: draggedColumn.value.id,
-    targetId: targetColumn.id
-  })
 
   try {
-    console.log('Calling reorderColumns...')
     await reorderColumns(draggedColumn.value, targetColumn, dropSide)
-    console.log('Reorder successful!')
   } catch (err) {
     error.value = 'Falha ao reordenar listas. Tente novamente.'
-    console.error('Error reordering columns:', err)
+    // Silenciar logs no console; manter feedback de erro via UI
   }
 
   onColumnDragEnd(event)
@@ -1491,18 +1432,14 @@ const trackMouseDuringDrag = (event) => {
 
 // Reordenar colunas
 const reorderColumns = async (sourceColumn, targetColumn, position) => {
-  console.log('reorderColumns called with:', { sourceColumn, targetColumn, position })
 
   const currentLists = [...taskLists.value].sort((a, b) => (a.position || 0) - (b.position || 0))
-  console.log('Current lists sorted by position:', currentLists.map(l => ({ id: l.id, label: l.name, position: l.position })))
 
   const sourceIndex = currentLists.findIndex(list => list.id === sourceColumn.id)
   const targetIndex = currentLists.findIndex(list => list.id === targetColumn.id)
 
-  console.log('Source index:', sourceIndex, 'Target index:', targetIndex)
 
   if (sourceIndex === -1 || targetIndex === -1) {
-    console.log('Invalid indices, returning')
     return
   }
 
@@ -1510,7 +1447,6 @@ const reorderColumns = async (sourceColumn, targetColumn, position) => {
 
   if (position === 'swap') {
     // Trocar posições diretamente
-    console.log('SWAP mode: exchanging positions')
     const sourcePosition = currentLists[sourceIndex].position
     const targetPosition = currentLists[targetIndex].position
 
@@ -1553,21 +1489,16 @@ const reorderColumns = async (sourceColumn, targetColumn, position) => {
     }))
   }
 
-  console.log('Calling API with updateData:', updateData)
 
   try {
     // Atualizar via API - enviar no formato correto
-    console.log('Sending to API:', { lists: updateData })
     await taskListsApi.reorder(updateData)
-    console.log('API call completed successfully')
   } catch (error) {
-    console.error('Error reordering columns:', error)
+  // Silenciar logs no console; manter feedback de erro via UI
     throw error
   }
 
   // Atualizar UI local - FORÇAR REATIVIDADE
-  console.log('Atualizando UI local...')
-  console.log('taskLists.value antes:', taskLists.value.map(tl => ({ id: tl.id, name: tl.name, position: tl.position })))
 
   // Criar uma nova referência do array para garantir reatividade
   const updatedLists = [...taskLists.value]
@@ -1575,10 +1506,7 @@ const reorderColumns = async (sourceColumn, targetColumn, position) => {
   updateData.forEach(item => {
     const listIndex = updatedLists.findIndex(list => list.id === item.id)
     if (listIndex !== -1) {
-      console.log(`Atualizando lista ${item.id} de posição ${updatedLists[listIndex].position} para ${item.position}`)
       updatedLists[listIndex] = { ...updatedLists[listIndex], position: item.position }
-    } else {
-      console.log(`Lista com ID ${item.id} não encontrada!`)
     }
   })
 
@@ -1587,10 +1515,7 @@ const reorderColumns = async (sourceColumn, targetColumn, position) => {
 
   // Forçar reatividade com nova referência
   taskLists.value = updatedLists
-
-  console.log('taskLists.value após atualização completa:', taskLists.value.map(tl => ({ id: tl.id, name: tl.name, position: tl.position })))
-
-  console.log('Column reordered successfully:', sourceColumn.label, 'moved from position', sourceIndex + 1, 'to position', targetIndex + 1)
+ 
 }
 
 onMounted(async () => {
