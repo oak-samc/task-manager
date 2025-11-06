@@ -6,10 +6,10 @@ import { RouterView } from 'vue-router'
   <div id="app">
     <header class="header">
       <div class="container">
-        <h1 class="logo">Task Manager</h1>
+        <RouterLink to="/projects" class="logo">Task Manager</RouterLink>
         <nav class="nav">
-          <RouterLink to="/" class="nav-link">Projetos</RouterLink>
-          <RouterLink to="/tasks" class="nav-link">Todas as Tarefas</RouterLink>
+          <RouterLink to="/projects" class="nav-link">Projetos</RouterLink>
+          <RouterLink to="/alltasks" class="nav-link">Todas as Tarefas</RouterLink>
         </nav>
       </div>
     </header>
@@ -58,6 +58,7 @@ body {
   color: #2563eb;
   font-size: 1.5rem;
   font-weight: 700;
+  text-decoration: none;
 }
 
 .nav {
