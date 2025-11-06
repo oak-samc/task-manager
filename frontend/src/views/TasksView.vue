@@ -464,7 +464,7 @@ const currentProject = computed(() => {
 const pageTitle = computed(() => {
   if (projectId.value) {
     const project = projects.value.find(p => p.id == projectId.value)
-    return project ? `${project.name} - Tarefas` : 'Tarefas do Projeto'
+    return project ? `${project.name}` : 'Tarefas do Projeto'
   }
   return 'Todas as Tarefas'
 })
