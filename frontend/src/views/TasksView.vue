@@ -170,7 +170,7 @@
       <div v-if="columns.length === 0" class="empty-board">
         <span class="empty-create-list" @click="showTaskListForm = true">+ Criar lista</span>
       </div>
-      <div v-else class="kanban-board" :class="{ 'drag-active': draggedColumn }" ref="kanbanBoard" @scroll="checkScroll">
+      <div v-else class="kanban-board" :class="{ 'drag-active': (draggedColumn || draggedTask) }" ref="kanbanBoard" @scroll="checkScroll">
       <div
         class="kanban-column"
         v-for="column in columns"
@@ -1343,6 +1343,10 @@ let autoScrollInterval = null
 
 const startAutoScroll = () => {
   if (autoScrollInterval) return // Evitar múltiplos intervalos
+  // Desativar suavização para resposta imediata durante o arraste
+  if (kanbanBoard.value) {
+    kanbanBoard.value.style.scrollBehavior = 'auto'
+  }
 
   autoScrollInterval = setInterval(() => {
     // Funciona tanto para colunas quanto para tasks
@@ -1353,7 +1357,7 @@ const startAutoScroll = () => {
 
     // Obter posição do mouse relativa ao container
     const rect = kanbanContainer.getBoundingClientRect()
-    const scrollThreshold = 120 // Reduzido para ser mais responsivo
+    const scrollThreshold = 200 // Zona maior para ativação previsível nas bordas
 
     // Verificar se há evento de mouse ativo para obter posição
     if (window.lastMouseEvent) {
@@ -1362,16 +1366,16 @@ const startAutoScroll = () => {
       let scrollSpeed = 0
 
       if (mouseX < rect.left + scrollThreshold) {
-        // Scroll para esquerda - velocidade suave e progressiva
+        // Scroll para esquerda - velocidade linear com mínimo, mais previsível
         const distanceFromEdge = Math.max(0, mouseX - rect.left)
         const proximityFactor = Math.max(0, (scrollThreshold - distanceFromEdge) / scrollThreshold)
-        scrollSpeed = -Math.round(proximityFactor * proximityFactor * 40 + 5) // Curva quadrática mais suave
+        scrollSpeed = -Math.round(Math.max(8, proximityFactor * 35))
 
       } else if (mouseX > rect.right - scrollThreshold) {
-        // Scroll para direita - velocidade suave e progressiva
+        // Scroll para direita - velocidade linear com mínimo, mais previsível
         const distanceFromEdge = Math.max(0, rect.right - mouseX)
         const proximityFactor = Math.max(0, (scrollThreshold - distanceFromEdge) / scrollThreshold)
-        scrollSpeed = Math.round(proximityFactor * proximityFactor * 40 + 5) // Curva quadrática mais suave
+        scrollSpeed = Math.round(Math.max(8, proximityFactor * 35))
       }
 
       if (scrollSpeed !== 0) {
@@ -1385,6 +1389,10 @@ const stopAutoScroll = () => {
   if (autoScrollInterval) {
     clearInterval(autoScrollInterval)
     autoScrollInterval = null
+  }
+  // Restaurar comportamento padrão
+  if (kanbanBoard.value) {
+    kanbanBoard.value.style.scrollBehavior = ''
   }
 
   // Restaurar cursor padrão
@@ -1401,7 +1409,7 @@ const trackMouseDuringDrag = (event) => {
     // Feedback visual adicional - mostrar velocidade de scroll no cursor
     const rect = kanbanBoard.value?.getBoundingClientRect()
     if (rect) {
-      const scrollThreshold = 150
+      const scrollThreshold = 200
       let cursorStyle = draggedTask.value ? 'grabbing' : 'grabbing'
 
       if (event.clientX < rect.left + scrollThreshold) {
@@ -1646,6 +1654,11 @@ watch(() => taskLists.value.length, () => {
   /* Scroll horizontal */
   scroll-behavior: smooth;
   -webkit-overflow-scrolling: touch;
+}
+
+.kanban-board.drag-active {
+  /* Durante arraste, tornamos o scroll imediato para não atrasar a resposta */
+  scroll-behavior: auto;
 }
 
 .kanban-column {
