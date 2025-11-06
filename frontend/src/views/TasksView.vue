@@ -213,7 +213,10 @@
         </div>
         <div
           class="column-content"
-          :class="{ 'drag-over-column': draggedTask && draggedTask.task_list_id !== column.id }"
+          :class="{ 
+            'drag-over-column': draggedTask && draggedTask.task_list_id !== column.id,
+            'scrollable': getTasksByColumn(column.id).length >= 4
+          }"
           @drop="onDrop($event, column.id, column.type)"
           @dragover.prevent="onDragOverColumn($event, column.id)"
           @dragenter.prevent="onDragEnterColumn($event, column.id)"
@@ -1635,6 +1638,8 @@ watch(() => taskLists.value.length, () => {
   display: flex;
   gap: 1.5rem;
   min-height: 600px;
+  /* variável para controlar a altura máxima das listas */
+  --column-max-height: 500px;
   overflow-x: auto;
   overflow-y: hidden;
   padding-bottom: 1rem;
@@ -1766,9 +1771,32 @@ watch(() => taskLists.value.length, () => {
 
 .column-content {
   min-height: 500px;
+  max-height: var(--column-max-height);
   display: flex;
   flex-direction: column;
   gap: 1rem;
+  overflow-y: hidden; /* padrão sem scroll interno */
+}
+
+.column-content.scrollable {
+  overflow-y: auto; /* scroll interno apenas quando necessário */
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
+.column-content.scrollable::-webkit-scrollbar {
+  width: 8px;
+}
+.column-content.scrollable::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 4px;
+}
+.column-content.scrollable::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+.column-content.scrollable::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
 }
 
 .task-card {
