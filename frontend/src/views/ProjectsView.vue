@@ -237,7 +237,6 @@ const loadProjects = async () => {
     filterProjects()
   } catch (err) {
     error.value = 'Failed to load projects. Please try again.'
-    // Silenciar logs no console; manter feedback de erro via UI
   } finally {
     loading.value = false
   }
@@ -295,7 +294,6 @@ const createProject = async () => {
     filterProjects() // Atualizar filtros
   } catch (err) {
     error.value = 'Failed to create project. Please try again.'
-    // Silenciar logs no console; manter feedback de erro via UI
   } finally {
     loading.value = false
   }
@@ -336,7 +334,6 @@ const updateProject = async () => {
     filterProjects() // Atualizar filtros
   } catch (err) {
     error.value = 'Falha ao atualizar projeto. Tente novamente.'
-    // Silenciar logs no console; manter feedback de erro via UI
   } finally {
     loading.value = false
   }
@@ -370,7 +367,6 @@ const confirmDelete = async () => {
     filterProjects() // Atualizar filtros
   } catch (err) {
     error.value = 'Falha ao excluir projeto. Tente novamente.'
-    // Silenciar logs no console; manter feedback de erro via UI
     
     showDeleteConfirm.value = false
     projectToDelete.value = null

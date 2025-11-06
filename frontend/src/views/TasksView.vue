@@ -491,7 +491,6 @@ const loadTasks = async () => {
     tasks.value = response.data
   } catch (err) {
     error.value = 'Failed to load tasks. Please try again.'
-  // Silenciar logs no console; manter feedback de erro via UI
   } finally {
     loading.value = false
   }
@@ -517,7 +516,6 @@ const loadTaskLists = async () => {
     }
 
   } catch (err) {
-  // Silenciar logs no console; manter feedback de erro via UI
   }
 }
 
@@ -541,7 +539,6 @@ const normalizeTaskListPositions = async () => {
 
 
   } catch (error) {
-  // Silenciar logs no console; manter feedback de erro via UI
   }
 }
 
@@ -598,7 +595,6 @@ const createTaskList = async () => {
     } else {
       error.value = 'Falha ao criar lista. Tente novamente.'
     }
-  // Silenciar logs no console; manter feedback de erro via UI
   } finally {
     loading.value = false
   }
@@ -609,7 +605,6 @@ const loadProjects = async () => {
     const response = await projectsApi.getAll()
     projects.value = response.data
   } catch (err) {
-  // Silenciar logs no console; manter feedback de erro via UI
   }
 }
 
@@ -637,7 +632,6 @@ const updateTaskList = async () => {
     await loadTaskLists()
   } catch (err) {
     error.value = 'Failed to update task list. Please try again.'
-  // Silenciar logs no console; manter feedback de erro via UI
   } finally {
     loading.value = false
   }
@@ -660,7 +654,6 @@ const confirmDeleteTaskList = async () => {
     await loadTasks()
   } catch (err) {
     error.value = 'Erro ao deletar lista. Tente novamente.'
-  // Silenciar logs no console; manter feedback de erro via UI
   } finally {
     taskListToDelete.value = null
     showDeleteTaskListConfirm.value = false
@@ -702,7 +695,6 @@ const updateProject = async () => {
     editingProject.value = null
   } catch (err) {
     error.value = 'Erro ao atualizar projeto. Tente novamente.'
-  // Silenciar logs no console; manter feedback de erro via UI
   } finally {
     loading.value = false
   }
@@ -744,7 +736,6 @@ const confirmDeleteProject = async () => {
 
   } catch (err) {
     error.value = 'Erro ao deletar projeto. Verifique se não há dependências.'
-  // Silenciar logs no console; manter feedback de erro via UI
   } finally {
     loading.value = false
   }
@@ -779,7 +770,6 @@ const createTask = async () => {
     showCreateForm.value = false
   } catch (err) {
     error.value = 'Failed to create task. Please try again.'
-  // Silenciar logs no console; manter feedback de erro via UI
   } finally {
     loading.value = false
   }
@@ -803,7 +793,6 @@ const updateTask = async () => {
     editingTask.value = null
   } catch (err) {
     error.value = 'Failed to update task. Please try again.'
-  // Silenciar logs no console; manter feedback de erro via UI
   } finally {
     loading.value = false
   }
@@ -824,7 +813,6 @@ const confirmDeleteTask = async () => {
     taskToDelete.value = null
   } catch (err) {
     error.value = 'Falha ao excluir tarefa. Tente novamente.'
-  // Silenciar logs no console; manter feedback de erro via UI
   }
 }
 
@@ -945,7 +933,6 @@ const onDropOnTask = async (event, targetTask) => {
     }
   } catch (err) {
     error.value = 'Failed to reorder tasks. Please try again.'
-    // Silenciar logs no console; manter feedback de erro via UI
     // Recarregar para reverter mudanças visuais em caso de erro
     await loadTasks()
   }
@@ -1078,7 +1065,6 @@ const onDrop = async (event, columnId, columnType) => {
     }
 
   } catch (err) {
-    // Silenciar logs no console; manter feedback de erro via UI
     draggedTask.value = null
     // Parar auto-scroll ao finalizar drag de task
     stopAutoScroll()
@@ -1145,7 +1131,6 @@ const onDrop = async (event, columnId, columnType) => {
     }
   } catch (err) {
     error.value = 'Failed to update task. Please try again.'
-  // Silenciar logs no console; manter feedback de erro via UI
   }
 
   draggedTask.value = null
@@ -1345,7 +1330,6 @@ const onColumnDrop = async (event, targetColumn) => {
     await reorderColumns(draggedColumn.value, targetColumn, dropSide)
   } catch (err) {
     error.value = 'Falha ao reordenar listas. Tente novamente.'
-    // Silenciar logs no console; manter feedback de erro via UI
   }
 
   onColumnDragEnd(event)
@@ -1494,7 +1478,6 @@ const reorderColumns = async (sourceColumn, targetColumn, position) => {
     // Atualizar via API - enviar no formato correto
     await taskListsApi.reorder(updateData)
   } catch (error) {
-  // Silenciar logs no console; manter feedback de erro via UI
     throw error
   }
 
