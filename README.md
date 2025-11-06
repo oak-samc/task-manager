@@ -6,22 +6,24 @@ Uma aplicação SPA (Single Page Application) para gerenciar projetos e suas res
 
 ### Backend (Laravel)
 
-- **API RESTful completa** para projetos e tarefas
-- **Banco de dados** com migrations para tabelas `projects` e `tasks`
-- **Models Eloquent** com relacionamentos (Project hasMany Tasks, Task belongsTo Project)
+- **API RESTful completa** para projetos, listas e tarefas
+- **Banco de dados** com migrations para tabelas `projects`, `task_lists` e `tasks`
+- **Models Eloquent** com relacionamentos (Project hasMany TaskLists, TaskList hasMany Tasks, Task belongsTo TaskList)
 - **Validações** usando Form Requests para integridade dos dados
-- **Relacionamento 1:N** entre projetos e tarefas
+- **Ordenação por `position`** para listas e tarefas, com endpoints de reordenação
+- **Relacionamentos 1:N** entre projetos → listas → tarefas
 
 ### Frontend (Vue.js)
 
 - **Listagem de projetos** na barra lateral
-- **Seleção de projeto** para visualizar tarefas específicas
-- **Visualização Kanban** com três colunas: "Pendente", "Em Andamento" e "Concluído"
-- **Criar tarefas** no projeto selecionado (status inicial "Pendente")
-- **Mover tarefas** entre colunas via drag-and-drop
-- **Trocar posições** entre tarefas na mesma coluna
-- **Excluir tarefas** com confirmação
-- **Editar tarefas** inline
+- **Seleção de projeto** para visualizar listas e tarefas
+- **Visualização por listas** (colunas dinâmicas por projeto)
+- **Criar listas e tarefas** no projeto selecionado
+- **Mover tarefas** entre listas via drag-and-drop
+- **Reordenar tarefas** dentro da lista por `position`
+- **Reordenar listas** do projeto (alteração de `position`)
+- **Excluir tarefas e listas** com confirmação
+- **Editar tarefas e listas** inline
 - **Interface responsiva**
 
 ## Tecnologias Utilizadas
@@ -116,10 +118,22 @@ Após seguir os passos acima, você terá:
 ### Tarefas
 
 - `GET /api/tasks` - Lista todas as tarefas
+- Suporta filtros: `project_id`, `task_list_id`, `use_task_lists=true`
 - `POST /api/tasks` - Cria uma nova tarefa
 - `GET /api/tasks/{id}` - Mostra uma tarefa específica
 - `PUT /api/tasks/{id}` - Atualiza uma tarefa
 - `DELETE /api/tasks/{id}` - Remove uma tarefa
+- `POST /api/tasks/reorder` - Reordena tarefa (atualiza `position` e/ou `task_list_id`)
+- `GET /api/tasks/test-reorder` - Endpoint de teste de reordenação
+
+### Listas de Tarefas
+
+- `GET /api/task-lists` - Lista todas as listas (filtros: `project_id`, `user_id`)
+- `POST /api/task-lists` - Cria uma nova lista
+- `GET /api/task-lists/{id}` - Mostra uma lista específica
+- `PUT /api/task-lists/{id}` - Atualiza uma lista
+- `DELETE /api/task-lists/{id}` - Remove uma lista
+- `POST /api/task-lists/reorder` - Reordena listas do projeto
 
 ## Validações Implementadas
 
@@ -132,7 +146,37 @@ Após seguir os passos acima, você terá:
 - `title`: obrigatório
 - `project_id`: obrigatório
 - `description`: opcional
-- `status`: obrigatório (pendente, em_andamento, concluido)
+- `task_list_id`: opcional (deve existir em `task_lists` quando enviado)
+- `position`: opcional (numérico)
+- `status`: opcional (`pending`, `in_progress`, `completed`)
+
+### TaskList
+
+- `name`: obrigatório
+- `project_id`: obrigatório
+- `user_id`: opcional
+- `position`: gerenciada via endpoint de reordenação
+
+## O que foi feito até agora
+
+- CRUD completo de Projetos, Listas e Tarefas (Laravel + Eloquent)
+- Migrations com `project_id`, `task_list_id` e `position` para ordenar e relacionar
+- Endpoints de reordenação para Listas (`/api/task-lists/reorder`) e Tarefas (`/api/tasks/reorder`)
+- Drag-and-drop no frontend para mover e ordenar tarefas entre listas
+- Visualização estilo Kanban por listas do projeto (colunas dinâmicas)
+- Validações com Form Requests para Project, Task e TaskList
+- Filtros na API para `project_id` e `task_list_id` em listagens
+- Respostas JSON padronizadas e controllers segmentados
+
+## Conformidade com o desafio
+
+- Entidades: `Project` e `Task` implementadas conforme o desafio; `TaskList` adicionada para escalar o Kanban por projeto
+- API RESTful: CRUD completo, filtros de listagem e endpoints específicos de reordenação
+- Validações: regras aplicadas via Form Requests, incluindo tipos, obrigatoriedades e existência
+- Frontend SPA: Vue 3 com Router, visualização por listas, criação/edição/exclusão e reordenação por drag-and-drop
+- Kanban: colunas dinâmicas baseadas em listas do projeto; o campo `status` das tarefas permanece disponível e validado
+- Bônus: suporte a status (`pending`, `in_progress`, `completed`) no modelo/validação; UI prioriza organização por listas
+- Ambiente: Backend com `.env.example`; Frontend não requer `.env` neste momento
 
 ## Respostas de Reflexão
 
@@ -146,7 +190,7 @@ Tive que estudar bastante sobre os eventos de drag do HTML5 e descobri que preci
 
 1. **Testes**: Eu sei que é importante ter testes, mas acabei focando mais em fazer funcionar primeiro. Gostaria de aprender a escrever testes para o Laravel e para o Vue também.
 2. **Melhorar a interface**: Colocaria umas animações quando as tarefas se movem, e talvez uns loading spinners quando está salvando. Também queria melhorar como funciona no celular.
-3. **Mais funcionalidades**: Seria legal poder editar o nome dos projetos, colocar prioridades nas tarefas, e talvez um sistema de busca quando tiver muitas tarefas.
+3. **Mais funcionalidades**: Seria legal poder colocar prioridades nas tarefas, e talvez um sistema de busca quando tiver muitas tarefas.
 
 ### Pergunta 3: Qual abordagem você usou para gerenciar o estado no Vue e por que você escolheu essa abordagem?
 
