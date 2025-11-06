@@ -6,26 +6,19 @@ use Illuminate\Foundation\Http\FormRequest;
 
 class UpdateTaskRequest extends FormRequest
 {
-    /**
-     * Determine if the user is authorized to make this request.
-     */
     public function authorize(): bool
     {
         return true;
     }
-
-    /**
-     * Get the validation rules that apply to the request.
-     *
-     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
-     */
     public function rules(): array
     {
         return [
             'title' => 'sometimes|required|string|max:255',
-            'description' => 'nullable|string',
+            'description' => 'sometimes|nullable|string',
             'status' => 'sometimes|required|in:pending,in_progress,completed',
-            'project_id' => 'sometimes|required|exists:projects,id'
+            'project_id' => 'sometimes|required|exists:projects,id',
+            'task_list_id' => 'sometimes|nullable|exists:task_lists,id',
+            'position' => 'sometimes|nullable|numeric'
         ];
     }
 }
