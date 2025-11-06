@@ -1647,9 +1647,10 @@ watch(() => taskLists.value.length, () => {
 }
 
 .header-section {
-  display: flex;
-  justify-content: space-between;
+  display: grid;
+  grid-template-columns: 1fr auto; /* título+ações do projeto | botões principais */
   align-items: center;
+  column-gap: 1rem;
   margin-bottom: 2rem;
 }
 
@@ -1658,6 +1659,8 @@ watch(() => taskLists.value.length, () => {
   display: flex;
   align-items: center;
   gap: 1rem;
+  flex: 1;
+  min-width: 0; /* permite que o título encolha e aplique ellipsis */
 }
 
 /* Ações do projeto */
@@ -1665,6 +1668,7 @@ watch(() => taskLists.value.length, () => {
   display: flex;
   align-items: center;
   gap: 0.5rem;
+  flex-shrink: 0; /* ícones não encolhem e não empurram o layout */
 }
 
 .project-edit-btn,
@@ -1690,19 +1694,19 @@ watch(() => taskLists.value.length, () => {
   display: flex;
   gap: 1rem;
   align-items: center;
+  flex-shrink: 0; /* impede que os botões encolham quando o título é longo */
 }
 
 .header-section h1 {
   font-size: 2rem;
   font-weight: 700;
   color: #1f2937;
-  /* Limitar título de projeto para não quebrar layout */
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  line-clamp: 2;
-  -webkit-box-orient: vertical;
+  /* Truncar em uma linha para preservar ações à direita */
+  flex: 1;
+  min-width: 0;
+  white-space: nowrap;
   overflow: hidden;
-  word-break: break-word;
+  text-overflow: ellipsis;
 }
 
 .form-card {
@@ -2307,8 +2311,9 @@ watch(() => taskLists.value.length, () => {
   }
 
   .header-section {
-    flex-direction: column;
-    gap: 1rem;
+    display: grid;
+    grid-template-columns: 1fr;
+    row-gap: 1rem;
     align-items: stretch;
   }
 
