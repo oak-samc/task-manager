@@ -427,6 +427,8 @@ const dragOverColumn = ref(null)
 const kanbanBoard = ref(null)
 const canScrollLeft = ref(false)
 const canScrollRight = ref(false)
+// Container de scroll vertical da coluna atualmente sob o ponteiro
+const currentScrollContainer = ref(null)
 
 const newTask = ref({
   title: '',
@@ -879,6 +881,11 @@ const onDragOverTask = (event, task) => {
   event.stopPropagation()
 
   if (draggedTask.value && draggedTask.value.id !== task.id) {
+    // Definir o container de scroll vertical (lista da coluna)
+    const container = event.currentTarget.closest('.column-content')
+    if (container) {
+      currentScrollContainer.value = container
+    }
     // Calcular zonas: topo (30%), centro-swap (40%), base (30%)
     const rect = event.currentTarget.getBoundingClientRect()
     const mouseY = event.clientY
@@ -908,6 +915,12 @@ const onDragLeaveTask = (event, task) => {
   // Remover indicador visual quando sair da task
   if (dragOverTask.value && dragOverTask.value.startsWith(task.id.toString())) {
     dragOverTask.value = null
+  }
+
+  // Se saiu do card, limpar referência do container de scroll vertical
+  const container = event.currentTarget.closest('.column-content')
+  if (container && currentScrollContainer.value === container) {
+    currentScrollContainer.value = null
   }
 }
 
@@ -1420,8 +1433,9 @@ const startAutoScroll = () => {
     const scrollThreshold = 200 // Zona maior para ativação previsível nas bordas
 
     // Verificar se há evento de mouse ativo para obter posição
-    if (window.lastMouseEvent) {
+  if (window.lastMouseEvent) {
       const mouseX = window.lastMouseEvent.clientX
+      const mouseY = window.lastMouseEvent.clientY
 
       let scrollSpeed = 0
 
@@ -1440,6 +1454,28 @@ const startAutoScroll = () => {
 
       if (scrollSpeed !== 0) {
         kanbanContainer.scrollBy({ left: scrollSpeed, behavior: 'auto' })
+      }
+
+      // Auto-scroll vertical dentro da coluna atual
+      const columnContainer = currentScrollContainer.value
+      if (columnContainer && columnContainer.scrollHeight > columnContainer.clientHeight) {
+        const cRect = columnContainer.getBoundingClientRect()
+        const vThreshold = 120 // zona de ativação vertical
+        let vSpeed = 0
+
+        if (mouseY < cRect.top + vThreshold) {
+          const distance = Math.max(0, mouseY - cRect.top)
+          const factor = Math.max(0, (vThreshold - distance) / vThreshold)
+          vSpeed = -Math.round(Math.max(8, factor * 35))
+        } else if (mouseY > cRect.bottom - vThreshold) {
+          const distance = Math.max(0, cRect.bottom - mouseY)
+          const factor = Math.max(0, (vThreshold - distance) / vThreshold)
+          vSpeed = Math.round(Math.max(8, factor * 35))
+        }
+
+        if (vSpeed !== 0) {
+          columnContainer.scrollBy({ top: vSpeed, behavior: 'auto' })
+        }
       }
     }
   }, 16) // 60fps - mais suave e estável
