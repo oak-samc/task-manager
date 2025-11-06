@@ -227,6 +227,7 @@
             :key="task.id"
             class="task-card"
             :class="{
+              'drag-over-center': dragOverTask === `${task.id}-center`,
               'drag-over-before': dragOverTask === `${task.id}-before`,
               'drag-over-after': dragOverTask === `${task.id}-after`
             }"
@@ -878,13 +879,23 @@ const onDragOverTask = (event, task) => {
   event.stopPropagation()
 
   if (draggedTask.value && draggedTask.value.id !== task.id) {
-    // Calcular se está na metade superior ou inferior da task
+    // Calcular zonas: topo (30%), centro-swap (40%), base (30%)
     const rect = event.currentTarget.getBoundingClientRect()
     const mouseY = event.clientY
-    const taskCenterY = rect.top + rect.height / 2
+    const relativeY = mouseY - rect.top
+    const height = rect.height
 
-    // Definir zona de inserção (acima ou abaixo)
-    const insertPosition = mouseY < taskCenterY ? 'before' : 'after'
+    let insertPosition = 'center'
+    const topZone = height * 0.30
+    const bottomZone = height * 0.70
+
+    if (relativeY <= topZone) {
+      insertPosition = 'before'
+    } else if (relativeY >= bottomZone) {
+      insertPosition = 'after'
+    } else {
+      insertPosition = 'center' // troca direta
+    }
 
     dragOverTask.value = `${task.id}-${insertPosition}`
   }
@@ -956,6 +967,32 @@ const handleSameColumnReorder = async (sourceTask, targetTask, insertPosition = 
 
   if (sourceIndex === -1 || targetIndex === -1) return
 
+  // Nova opção: troca direta quando o drop é no centro
+  if (insertPosition === 'center' || insertPosition === 'swap') {
+    const sourcePos = sourceTask.position || 0
+    const targetPos = targetTask.position || 0
+
+    await tasksApi.reorder([
+      { id: sourceTask.id, position: targetPos, task_list_id: sourceTask.task_list_id || null },
+      { id: targetTask.id, position: sourcePos, task_list_id: targetTask.task_list_id || null }
+    ])
+
+    // Atualizar UI local
+    const sourceAllIdx = tasks.value.findIndex(t => t.id === sourceTask.id)
+    if (sourceAllIdx !== -1) tasks.value[sourceAllIdx].position = targetPos
+    const targetAllIdx = tasks.value.findIndex(t => t.id === targetTask.id)
+    if (targetAllIdx !== -1) tasks.value[targetAllIdx].position = sourcePos
+
+    // Ordenar para refletir a troca
+    tasks.value.sort((a, b) => {
+      if (a.task_list_id !== b.task_list_id) {
+        return (a.task_list_id || 0) - (b.task_list_id || 0)
+      }
+      return (a.position || 0) - (b.position || 0)
+    })
+    return
+  }
+
   // Se arrastando para a mesma posição, não fazer nada
   if (sourceIndex === targetIndex ||
       (insertPosition === 'before' && sourceIndex === targetIndex - 1) ||
@@ -1017,6 +1054,29 @@ const handleCrossColumnMove = async (sourceTask, targetTask, insertPosition = 'b
   const targetIndex = tasksInTargetColumn.findIndex(t => t.id === targetTask.id)
 
   let newPosition
+
+  // Nova opção: troca direta entre colunas quando drop é no centro
+  if (insertPosition === 'center' || insertPosition === 'swap') {
+    const sourcePos = sourceTask.position || 0
+    const targetPos = targetTask.position || 0
+    const sourceListId = sourceTask.task_list_id
+    const targetListId = targetTask.task_list_id
+
+    await tasksApi.reorder([
+      { id: sourceTask.id, position: targetPos, task_list_id: targetListId },
+      { id: targetTask.id, position: sourcePos, task_list_id: sourceListId }
+    ])
+
+    // Atualizar ambas via update para manter compatibilidade
+    const responseSource = await tasksApi.update(sourceTask.id, { ...sourceTask, task_list_id: targetListId, position: targetPos })
+    const responseTarget = await tasksApi.update(targetTask.id, { ...targetTask, task_list_id: sourceListId, position: sourcePos })
+
+    const indexSource = tasks.value.findIndex(t => t.id === sourceTask.id)
+    if (indexSource !== -1) tasks.value[indexSource] = responseSource.data
+    const indexTarget = tasks.value.findIndex(t => t.id === targetTask.id)
+    if (indexTarget !== -1) tasks.value[indexTarget] = responseTarget.data
+    return
+  }
 
   if (insertPosition === 'before') {
     // Inserir ANTES da target task
@@ -1854,6 +1914,12 @@ watch(() => taskLists.value.length, () => {
   background-color: #2563eb;
   border-radius: 2px;
   z-index: 10;
+}
+
+.task-card.drag-over-center {
+  border: 2px solid #10b981;
+  background-color: rgba(16, 185, 129, 0.08);
+  transform: scale(1.01);
 }
 
 .task-header {
