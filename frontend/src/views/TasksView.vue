@@ -215,7 +215,7 @@
           class="column-content"
           :class="{ 
             'drag-over-column': draggedTask && draggedTask.task_list_id !== column.id,
-            'scrollable': getTasksByColumn(column.id).length >= 4
+            'scrollable': getTasksByColumn(column.id).length >= 3
           }"
           @drop="onDrop($event, column.id, column.type)"
           @dragover.prevent="onDragOverColumn($event, column.id)"
